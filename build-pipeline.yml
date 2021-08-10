@@ -15,5 +15,6 @@
             repository: $(imageName)
             Dockerfile: batchkit_examples/speech_sdk/Dockerfile
             containerRegistry: joshcrtest.azurecr.io
+            arguments: -u JoshCRTest -p jiNt=+s11kqBe5U5IOJgxhBANnKT1p8l
             tags: |
               $(latest)
