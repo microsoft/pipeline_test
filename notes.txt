@@ -1,0 +1,30 @@
+# UPDATE PYPI PACKAGE
+
+## Pseudocode
+dev updates values in setup_batchkit.py 
+cd batch-processing-kit
+
+### Publishing Python package 
+./setup_batchkit.py sdist bdist_wheel
+py -m pip install --upgrade twine
+twine check dist/*
+twine upload dist/* -u __token__ -p pypi-AgEIcHlwaS5vcmcCJDM3NDI0Yjk1LThiOTYtNGU0My1iNGRiLTQwYTEwOTAzN2JhMwACJXsicGVybWlzc2lvbnMiOiAidXNlciIsICJ2ZXJzaW9uIjogMX0AAAYgoh65u3dJ8iu9PGExJIsLg4u9KH6N1Q4SbeXtEQoxw9A
+
+### Creating and temporarily storing Docker image 
+docker build -t test_repo .
+docker login joshcrtest.azurecr.io -u JoshCRTest -p jiNt=+s11kqBe5U5IOJgxhBANnKT1p8l
+docker tag test_repo joshcrtest.azurecr.io/test_repo
+docker push joshcrtest.azurecr.io/test_repo
+
+### Testing and publishing Docker image
+docker pull joshcrtest.azurecr.io/test_repo:latest
+
+
+EXTRA
+set HOME variable to parent directory of .pypirc directory
+Configure .pypirc file and place in .pypirc directory 
+ensure "wheel" is installed
+cd batch-processing-kit
+py -m twine upload --repository test_pkg dist/*
+
+### pipe_line test repository stored at https://repos.opensource.microsoft.com/orgs/microsoft/repos/pipeline_test
