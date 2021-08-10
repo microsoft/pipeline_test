@@ -5,12 +5,15 @@
           vmImage: 'ubuntu-20.04' # set to windows-latest or another Windows vmImage for Windows builds
 
         variables:
-          imageName: 'test_repo'
+          imageName: 'pipeline_test'
 
         steps:
         - task: Docker@2
-          displayName: Build an image
+          displayName: Build and push an image to container registry
           inputs:
+            command: buildAndPush
             repository: $(imageName)
-            command: build
             Dockerfile: batchkit_examples/speech_sdk/Dockerfile
+            containerRegistry: $(joshcrtest.azurecr.io)
+            tags: |
+              $(latest)
