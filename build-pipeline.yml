@@ -9,12 +9,17 @@
 
         steps:
         - task: Docker@2
+          displayName: Login to ACR
+          inputs:
+            command: login
+            containerRegistry: "joshcrtest.azurecr.io"
+            arguments: --username JoshCRTest --password jiNt=+s11kqBe5U5IOJgxhBANnKT1p8l
+        - task: Docker@2
           displayName: Build and push an image to container registry
           inputs:
             command: buildAndPush
             repository: $(imageName)
             Dockerfile: batchkit_examples/speech_sdk/Dockerfile
-            containerRegistry: joshcrtest.azurecr.io
-            arguments: --username JoshCRTest --password jiNt=+s11kqBe5U5IOJgxhBANnKT1p8l
+            containerRegistry: "joshcrtest.azurecr.io"
             tags: |
               $(latest)
