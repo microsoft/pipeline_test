@@ -12,23 +12,23 @@ variables:
   imageName: 'pipeline_test'
 
 steps:
-# - task: Docker@2
-#   displayName: Build and push an image to container registry
-#   inputs:
-#     command: buildAndPush
-#     repository: $(imageName)
-#     Dockerfile: batchkit_examples/speech_sdk/Dockerfile
-#     containerRegistry: $(dockerRegistryServiceConnection)
-#     tags: |
-#       latest
+- task: Docker@2
+  displayName: Build and push an image to container registry
+  inputs:
+    command: buildAndPush
+    repository: $(imageName)
+    Dockerfile: batchkit_examples/speech_sdk/Dockerfile
+    containerRegistry: $(dockerRegistryServiceConnection)
+    tags: |
+      latest
 
-# - task: CmdLine@2
-#   displayName: Pull image from container registry and start container 
-#   inputs:
-#     script: |
-#       docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
-#       docker pull $(containerRegistry)/$(imageName):latest
-#       docker run $(containerRegistry)/$(imageName)
+- task: CmdLine@2
+  displayName: Pull image from container registry and start container 
+  inputs:
+    script: |
+      docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
+      docker pull $(containerRegistry)/$(imageName):latest
+      docker run $(containerRegistry)/$(imageName)
 - task: CmdLine@2
   displayName: Build Python wheel
   inputs:
