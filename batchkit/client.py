@@ -1,4 +1,5 @@
 import time
 
+print('start')
 print('Executing batchkit client')
-exit(1)
+exit()
