@@ -12,31 +12,32 @@ variables:
   imageName: 'pipeline_test'
 
 steps:
-- task: Docker@2
-  displayName: Build and push an image to container registry
-  inputs:
-    command: buildAndPush
-    repository: $(imageName)
-    Dockerfile: batchkit_examples/speech_sdk/Dockerfile
-    containerRegistry: $(dockerRegistryServiceConnection)
-    tags: |
-      latest
+# - task: Docker@2
+#   displayName: Build and push an image to container registry
+#   inputs:
+#     command: buildAndPush
+#     repository: $(imageName)
+#     Dockerfile: batchkit_examples/speech_sdk/Dockerfile
+#     containerRegistry: $(dockerRegistryServiceConnection)
+#     tags: |
+#       latest
 
+# - task: CmdLine@2
+#   displayName: Pull image from container registry and start container 
+#   inputs:
+#     script: |
+#       docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
+#       docker pull $(containerRegistry)/$(imageName):latest
+#       docker run $(containerRegistry)/$(imageName)
 - task: CmdLine@2
-  displayName: Pull image from container registry and start container 
-  inputs:
-    script: |
-      docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
-      docker pull $(containerRegistry)/$(imageName):latest
-      docker run $(containerRegistry)/$(imageName)
-- task: CmdLine@2
-  displayName: Build Python wheel
+  displayName: Build and push Python wheel
   inputs:
     script: |
       sudo apt-get install -y python3-venv
       python3 -m venv awesome_venv
       source awesome_venv/bin/activate
       pip install --upgrade twine
+      pip install wheel
       ls | xargs
       chmod 755 setup_batchkit.py
       python setup_batchkit.py sdist bdist_wheel
