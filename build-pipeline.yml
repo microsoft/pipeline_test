@@ -10,6 +10,8 @@ variables:
   containerRegistry: 'joshcacr.azurecr.io'
 
   imageName: 'pipeline_test'
+  feedName: 'pipeline_feed_test'
+  setupFile: 'setup_batchkit.py'
 
 steps:
 # - task: Docker@2
@@ -30,17 +32,11 @@ steps:
 #       docker pull $(containerRegistry)/$(imageName):latest
 #       docker run $(containerRegistry)/$(imageName)
 
-# - script: |
-#     sudo apt-get install -y python3-venv
-#     python3 -m venv my_venv
-#     source my_venv/bin/activate
-#     pip install twine
-#     pip install wheel
 
 - task: TwineAuthenticate@1
   displayName: 'Twine Authenticate'
   inputs:
-    artifactFeed: Skyman/pipeline_feed_test
+    artifactFeed: Skyman/$(feedName)
 
 - script: |
     sudo apt-get install -y python3-venv
@@ -49,11 +45,7 @@ steps:
     pip install twine
     pip install wheel
     ls | xargs
-    chmod 755 setup_batchkit.py
-    python setup_batchkit.py sdist bdist_wheel
+    chmod 755 $(setupFile)
+    python $(setupFile) sdist bdist_wheel
     twine check dist/*
-    python -m twine upload -r pipeline_feed_test --config-file $(PYPIRC_PATH) dist/*
-
-# pip install artifacts-keyring
-# twine upload --repository-url https://pkgs.dev.azure.com/msasg/Skyman/_packaging/pipeline_feed_test/pypi/upload dist/*
-# twine upload dist/* -u __token__ -p $(TEST-REPO_TOKEN)
+    python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
