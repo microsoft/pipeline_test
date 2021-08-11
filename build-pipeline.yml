@@ -61,8 +61,7 @@ stages:
           python3 -m venv my_venv
           source my_venv/bin/activate
           python -m pip install --upgrade pip
-          pip install twine wheel
-          python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
+          pip install twine wheel keyring artifacts-keyring
           pip install --index-url https://pkgs.dev.azure.com/Skyman/_packaging/$(feedName)/pypi/simple/ joshc-repo
 
     # pip install joshc-repo
