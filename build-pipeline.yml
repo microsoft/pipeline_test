@@ -1,8 +1,8 @@
 trigger:
 - main
 
-pool:
-  vmImage: 'ubuntu-20.04' # set to windows-latest or another Windows vmImage for Windows builds
+resources:
+- repo: self
 
 variables:
   # Container registry service connection established during pipeline creation
@@ -12,40 +12,62 @@ variables:
   imageName: 'pipeline_test'
   feedName: 'pipeline_feed_test'
   setupFile: 'setup_batchkit.py'
+  vmImageName: 'ubuntu-20.04' # set to windows-latest or another Windows vmImage for Windows builds
 
-steps:
-# - task: Docker@2
-#   displayName: Build and push an image to container registry
-#   inputs:
-#     command: buildAndPush
-#     repository: $(imageName)
-#     Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
-#     containerRegistry: $(dockerRegistryServiceConnection)
-#     tags: |
-#       latest
+pool:
+  vmImage = $(vmImageName)
 
-# - task: CmdLine@2
-#   displayName: Pull image from container registry and start container 
-#   inputs:
-#     script: |
-#       docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
-#       docker pull $(containerRegistry)/$(imageName):latest
-#       docker run $(containerRegistry)/$(imageName)
+stages:
 
+- stage: Build 
+  displayName: Build Python packages and Docker image
 
-- task: TwineAuthenticate@1
-  displayName: 'Twine Authenticate'
-  inputs:
-    artifactFeed: Skyman/$(feedName)
+  # jobs run on independent agents
+  jobs:
+  - job: BuildPythonAndDocker
+    displayName: Build Python packages and Docker image
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageName)
+        Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          latest
+    - task: TwineAuthenticate@1
+      displayName: 'Twine Authenticate'
+      inputs:
+        artifactFeed: Skyman/$(feedName)
+    - script: |
+        sudo apt-get install -y python3-venv
+        python3 -m venv my_venv
+        source my_venv/bin/activate
+        pip install twine
+        pip install wheel
+        ls | xargs
+        chmod 755 $(setupFile)
+        python $(setupFile) sdist bdist_wheel
+        twine check dist/*
+        python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
+        
+- stage: Test 
+  displayName: Test Python packages and Docker image
+  jobs:
+  - job: TestPythonAndDocker
+    displayName: Test Python packages and Docker image
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: CmdLine@2
+      displayName: Pull image from container registry and start container 
+      inputs:
+        script: |
+          docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
+          docker pull $(containerRegistry)/$(imageName):latest
+          docker run $(containerRegistry)/$(imageName)
 
-- script: |
-    sudo apt-get install -y python3-venv
-    python3 -m venv my_venv
-    source my_venv/bin/activate
-    pip install twine
-    pip install wheel
-    ls | xargs
-    chmod 755 $(setupFile)
-    python $(setupFile) sdist bdist_wheel
-    twine check dist/*
-    python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
+# - stage: Release
