@@ -63,7 +63,9 @@ stages:
           python -m pip install --upgrade pip
           pip install twine wheel
           python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
-          pip install joshc-repo
+          pip install --index-url https://pkgs.dev.azure.com/Skyman/_packaging/$(feedName)/pypi/simple/ joshc-repo
+
+    # pip install joshc-repo
 
     # - task: Docker@2
     #   displayName: Build and push an image to container registry
