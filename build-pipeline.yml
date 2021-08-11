@@ -30,12 +30,12 @@ steps:
 #       docker pull $(containerRegistry)/$(imageName):latest
 #       docker run $(containerRegistry)/$(imageName)
 
-- script: |
-    sudo apt-get install -y python3-venv
-    python3 -m venv my_venv
-    source my_venv/bin/activate
-    pip install twine
-    pip install wheel
+# - script: |
+#     sudo apt-get install -y python3-venv
+#     python3 -m venv my_venv
+#     source my_venv/bin/activate
+#     pip install twine
+#     pip install wheel
 
 - task: TwineAuthenticate@1
   displayName: 'Twine Authenticate'
@@ -43,7 +43,11 @@ steps:
     artifactFeed: Skyman/pipeline_feed_test
 
 - script: |
+    sudo apt-get install -y python3-venv
+    python3 -m venv my_venv
     source my_venv/bin/activate
+    pip install twine
+    pip install wheel
     ls | xargs
     chmod 755 setup_batchkit.py
     python setup_batchkit.py sdist bdist_wheel
