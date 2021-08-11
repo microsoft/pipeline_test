@@ -7,7 +7,7 @@ pool:
 variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: '5b196e82-84a2-4819-9605-a94dae8a565c'
-  containerRegistry: 'joshcrtest.azurecr.io'
+  containerRegistry: 'joshcacr.azurecr.io'
 
   imageName: 'pipeline_test'
 
