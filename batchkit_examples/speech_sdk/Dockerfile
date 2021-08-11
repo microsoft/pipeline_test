@@ -13,8 +13,4 @@ RUN \
  apk add --no-cache curl && \
  apk add --no-cache vim
 
-<<<<<<< HEAD
 ENTRYPOINT ["python", "-u", "client.py"]
-=======
-ENTRYPOINT ["python", "-u", "client.py"]
->>>>>>> refs/remotes/origin/main
