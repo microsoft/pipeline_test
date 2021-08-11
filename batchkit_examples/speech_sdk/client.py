@@ -1,4 +1,3 @@
 import time
 
-print('Executing batchkit client')
-exit(1)
+print('in speech_sdk client')
