@@ -29,6 +29,24 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: TwineAuthenticate@1
+      displayName: 'Twine Authenticate'
+      inputs:
+        artifactFeed: Skyman/$(feedName)
+    - task: CmdLine@2
+      displayName: Build Python package
+      inputs:
+        script: |
+          sudo apt-get install -y python3-venv
+          python3 -m venv my_venv
+          source my_venv/bin/activate
+          pip install twine
+          pip install wheel
+          ls | xargs
+          chmod 755 $(setupFile)
+          python $(setupFile) sdist bdist_wheel
+          twine check dist/*
+          python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -38,22 +56,7 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           latest
-    - task: TwineAuthenticate@1
-      displayName: 'Twine Authenticate'
-      inputs:
-        artifactFeed: Skyman/$(feedName)
-    - script: |
-        sudo apt-get install -y python3-venv
-        python3 -m venv my_venv
-        source my_venv/bin/activate
-        pip install twine
-        pip install wheel
-        ls | xargs
-        chmod 755 $(setupFile)
-        python $(setupFile) sdist bdist_wheel
-        twine check dist/*
-        python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
-        
+
 - stage: Test 
   displayName: Test Python packages and Docker image
   jobs:
