@@ -29,48 +29,66 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: TwineAuthenticate@1
-      displayName: 'Twine Authenticate'
+    # - task: TwineAuthenticate@1
+    #   displayName: 'Twine Authenticate'
+    #   inputs:
+    #     artifactFeed: Skyman/$(feedName)
+    # - task: CmdLine@2
+    #   displayName: Build Python package
+    #   inputs:
+    #     script: |
+    #       sudo apt-get install -y python3-venv
+    #       python3 -m venv my_venv
+    #       source my_venv/bin/activate
+          # python -m pip install --upgrade pip
+          # pip install twine
+    #       pip install wheel
+    #       ls | xargs
+    #       chmod 755 $(setupFile)
+    #       python $(setupFile) sdist bdist_wheel
+    #       twine check dist/*
+    #       python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
+
+    - task: PipAuthenticate@0
+      displayName: Authenticate with artifact feed
       inputs:
-        artifactFeed: Skyman/$(feedName)
+        artifactFeeds: Skyman/$(feedName)
     - task: CmdLine@2
-      displayName: Build Python package
+      displayName: Consume Python package
       inputs:
         script: |
           sudo apt-get install -y python3-venv
           python3 -m venv my_venv
           source my_venv/bin/activate
-          pip install twine
-          pip install wheel
-          ls | xargs
-          chmod 755 $(setupFile)
-          python $(setupFile) sdist bdist_wheel
-          twine check dist/*
+          python -m pip install --upgrade pip
+          pip install twine wheel
           python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
-    - task: Docker@2
-      displayName: Build and push an image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageName)
-        Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          latest
+          pip install joshc-repo
 
-- stage: Test 
-  displayName: Test Python packages and Docker image
-  jobs:
-  - job: TestPythonAndDocker
-    displayName: Test Python packages and Docker image
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - task: CmdLine@2
-      displayName: Pull image from container registry and start container 
-      inputs:
-        script: |
-          docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
-          docker pull $(containerRegistry)/$(imageName):latest
-          docker run $(containerRegistry)/$(imageName)
+    # - task: Docker@2
+    #   displayName: Build and push an image to container registry
+    #   inputs:
+    #     command: buildAndPush
+    #     repository: $(imageName)
+    #     Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
+    #     containerRegistry: $(dockerRegistryServiceConnection)
+    #     tags: |
+    #       latest
+
+# - stage: Test 
+#   displayName: Test Python packages and Docker image
+#   jobs:
+#   - job: TestPythonAndDocker
+#     displayName: Test Python packages and Docker image
+#     pool:
+#       vmImage: $(vmImageName)
+#     steps:
+#     - task: CmdLine@2
+#       displayName: Pull image from container registry and start container 
+#       inputs:
+#         script: |
+#           docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
+#           docker pull $(containerRegistry)/$(imageName):latest
+#           docker run $(containerRegistry)/$(imageName)
 
 # - stage: Release
