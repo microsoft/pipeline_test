@@ -30,16 +30,17 @@ steps:
 #       docker pull $(containerRegistry)/$(imageName):latest
 #       docker run $(containerRegistry)/$(imageName)
 - task: CmdLine@2
-  displayName: Build Python wheel
+  displayName: Build and push Python wheel
   inputs:
     script: |
       sudo apt-get install -y python3-venv
       python3 -m venv awesome_venv
       source awesome_venv/bin/activate
       pip install --upgrade twine
+      pip install wheel
       ls | xargs
       chmod 755 setup_batchkit.py
-      ./setup_batchkit.py sdist bdist_wheel
+      python setup_batchkit.py sdist bdist_wheel
       twine check dist/*
       twine upload dist/* -u __token__ -p $(TEST-REPO_TOKEN)
 
