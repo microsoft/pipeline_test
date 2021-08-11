@@ -31,7 +31,7 @@ for line in required:
 # Package specification for batchkit library.
 setup(
     name='joshc_repo',
-    version='0.0.0.5',
+    version='0.0.0.6',
     author='Josh Clemons',
     author_email='clemonsjoshua6@microsoft.com',
     description="None",
