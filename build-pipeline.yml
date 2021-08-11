@@ -43,6 +43,7 @@ steps:
     artifactFeed: Skyman/pipeline_feed_test
 
 - script: |
+    source my_venv/bin/activate
     ls | xargs
     chmod 755 setup_batchkit.py
     python setup_batchkit.py sdist bdist_wheel
