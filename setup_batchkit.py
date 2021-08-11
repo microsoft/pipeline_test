@@ -30,15 +30,15 @@ for line in required:
 
 # Package specification for batchkit library.
 setup(
-    name='test_repo',
-    version='0.0.0.1',
+    name='joshc_repo',
+    version='0.0.0.3',
     author='Josh Clemons',
     author_email='clemonsjoshua6@microsoft.com',
     description="None",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/JoshBClemons/test_repo',
-    packages=["batchkit"],
+    packages=["joshc_repo"],
     install_requires=deps,
     license="MIT",
     classifiers=[

@@ -16,7 +16,7 @@ deps = [line for line in required if len(line) > 0 and line[0] != "#"]
 
 # Package specification that includes every example.
 setup(
-    name='test_repo_examples',
+    name='joshc_repo_examples',
     version='0.0.0.1',
     author='Josh Clemons',
     author_email='clemonsjoshua6@gmail.com',
@@ -25,7 +25,7 @@ setup(
     # Since batchkit_examples are located in the same repo as the batchkit lib, we can just depend on
     # the batchkit lib source directly. As an external project, we would instead take dependency
     # on the dependency `batchkit` wheel under `install_requires`.
-    packages=["batchkit", "batchkit_examples", "batchkit_examples/speech_sdk"],
+    packages=["joshc_repo", "joshc_repo_examples", "joshc_repo_examples/speech_sdk"],
     install_requires=deps,
     license="MIT",
     scripts=["batchkit_examples/speech_sdk/run-batch-client"],
