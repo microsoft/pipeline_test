@@ -62,6 +62,7 @@ stages:
           source my_venv/bin/activate
           python -m pip install --upgrade pip
           pip install twine wheel keyring artifacts-keyring
+          ls | xargs
           pip install --index-url https://pkgs.dev.azure.com/Skyman/_packaging/$(feedName)/pypi/simple/ joshc-repo
 
     # pip install joshc-repo
