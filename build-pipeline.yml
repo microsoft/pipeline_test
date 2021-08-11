@@ -17,7 +17,7 @@ steps:
   inputs:
     command: buildAndPush
     repository: $(imageName)
-    Dockerfile: batchkit_examples/speech_sdk/Dockerfile
+    Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
     containerRegistry: $(dockerRegistryServiceConnection)
     tags: |
       latest
