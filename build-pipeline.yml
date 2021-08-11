@@ -12,10 +12,19 @@ variables:
   imageName: 'pipeline_test'
 
 steps:
-- task: Docker@2
-  displayName: Build and push an image to container registry
+# - task: Docker@2
+#   displayName: Build and push an image to container registry
+#   inputs:
+#     command: buildAndPush
+#     repository: $(imageName)
+#     Dockerfile: batchkit_examples/speech_sdk/Dockerfile
+#     containerRegistry: $(dockerRegistryServiceConnection)
+#     tags: |
+#       latest
+
+- task: CmdLine@2
+  displayName: Pull image from container registry and start container 
   inputs:
-    command: buildAndPush
-    repository: $(imageName)
-    Dockerfile: batchkit_examples/speech_sdk/Dockerfile
-    containerRegistry: $(dockerRegistryServiceConnection)
+    script: |
+      docker pull joshcacr.azurecr.io/pipeline_test 
+      docker run joshcacr.azurecr.io/pipeline_test
