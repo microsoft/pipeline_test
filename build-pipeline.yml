@@ -1,25 +1,23 @@
-        trigger:
-        - main
+trigger:
+- main
 
-        pool:
-          vmImage: 'ubuntu-20.04' # set to windows-latest or another Windows vmImage for Windows builds
+pool:
+  vmImage: 'ubuntu-20.04' # set to windows-latest or another Windows vmImage for Windows builds
 
-        variables:
-          imageName: 'pipeline_test'
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '5b196e82-84a2-4819-9605-a94dae8a565c'
+  containerRegistry: 'joshcrtest.azurecr.io'
 
-        steps:
-        - task: Docker@2
-          displayName: Login to ACR
-          inputs:
-            command: login
-            containerRegistry: "joshcrtest.azurecr.io"
-            arguments: --username JoshCRTest --password jiNt=+s11kqBe5U5IOJgxhBANnKT1p8l
-        - task: Docker@2
-          displayName: Build and push an image to container registry
-          inputs:
-            command: buildAndPush
-            repository: $(imageName)
-            Dockerfile: batchkit_examples/speech_sdk/Dockerfile
-            containerRegistry: "joshcrtest.azurecr.io"
-            tags: |
-              $(latest)
+  imageName: 'pipeline_test'
+
+steps:
+- task: Docker@2
+  displayName: Build and push an image to container registry
+  inputs:
+    command: buildAndPush
+    repository: $(imageName)
+    Dockerfile: batchkit_examples/speech_sdk/Dockerfile
+    containerRegistry: $(dockerRegistryServiceConnection)
+    tags: |
+      $(latest)
