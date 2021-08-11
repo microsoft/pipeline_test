@@ -12,23 +12,23 @@ variables:
   imageName: 'pipeline_test'
 
 steps:
-- task: Docker@2
-  displayName: Build and push an image to container registry
-  inputs:
-    command: buildAndPush
-    repository: $(imageName)
-    Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
-    containerRegistry: $(dockerRegistryServiceConnection)
-    tags: |
-      latest
+# - task: Docker@2
+#   displayName: Build and push an image to container registry
+#   inputs:
+#     command: buildAndPush
+#     repository: $(imageName)
+#     Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
+#     containerRegistry: $(dockerRegistryServiceConnection)
+#     tags: |
+#       latest
 
-- task: CmdLine@2
-  displayName: Pull image from container registry and start container 
-  inputs:
-    script: |
-      docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
-      docker pull $(containerRegistry)/$(imageName):latest
-      docker run $(containerRegistry)/$(imageName)
+# - task: CmdLine@2
+#   displayName: Pull image from container registry and start container 
+#   inputs:
+#     script: |
+#       docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
+#       docker pull $(containerRegistry)/$(imageName):latest
+#       docker run $(containerRegistry)/$(imageName)
 - task: CmdLine@2
   displayName: Build and push Python wheel
   inputs:
@@ -42,10 +42,7 @@ steps:
       chmod 755 setup_batchkit.py
       python setup_batchkit.py sdist bdist_wheel
       twine check dist/*
-      twine upload dist/* -u __token__ -p $(TEST-REPO_TOKEN)
+      pip install artifacts-keyring
+      twine upload --repository-url https://pkgs.dev.azure.com/msasg/Skyman/_packaging/pipeline_feed_test/pypi/upload
 
-# - task: CmdLine@2
-#   displayName: Push Python wheel to artifact
-#   inputs:
-#     script: |
-
+# twine upload dist/* -u __token__ -p $(TEST-REPO_TOKEN)
