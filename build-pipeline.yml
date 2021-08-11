@@ -30,19 +30,30 @@ steps:
 #       docker pull $(containerRegistry)/$(imageName):latest
 #       docker run $(containerRegistry)/$(imageName)
 - task: CmdLine@2
-  displayName: Build and push Python wheel
+  displayName: Setup Python
   inputs:
     script: |
       sudo apt-get install -y python3-venv
-      python3 -m venv awesome_venv
-      source awesome_venv/bin/activate
-      pip install --upgrade twine
+      python3 -m venv my_venv
+      source my_venv/bin/activate
+      pip install twine
       pip install wheel
+
+- task: TwineAuthenticate@1
+  displayName: 'Twine Authenticate'
+  inputs:
+    artifactFeed: Skyman/pipeline_feed_test
+
+- task: CmdLine@2
+  displayName: Build and push Python wheel
+  inputs:
+    script: |
       ls | xargs
       chmod 755 setup_batchkit.py
       python setup_batchkit.py sdist bdist_wheel
       twine check dist/*
-      pip install artifacts-keyring
-      twine upload --repository-url https://pkgs.dev.azure.com/msasg/Skyman/_packaging/pipeline_feed_test/pypi/upload dist/*
+      python -m twine upload -r pipeline_feed_test --config-file $(PYPIRC_PATH) dist/*
 
+# pip install artifacts-keyring
+# twine upload --repository-url https://pkgs.dev.azure.com/msasg/Skyman/_packaging/pipeline_feed_test/pypi/upload dist/*
 # twine upload dist/* -u __token__ -p $(TEST-REPO_TOKEN)
