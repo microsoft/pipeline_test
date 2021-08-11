@@ -1,5 +1,3 @@
 import time
 
-print('start')
-print('Executing batchkit client')
-exit()
+print('in batchkit client')
