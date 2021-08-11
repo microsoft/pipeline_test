@@ -39,7 +39,7 @@ steps:
       pip install --upgrade twine
       ls | xargs
       chmod 755 setup_batchkit.py
-      ./setup_batchkit.py sdist bdist_wheel
+      python setup_batchkit.py sdist bdist_wheel
       twine check dist/*
       twine upload dist/* -u __token__ -p $(TEST-REPO_TOKEN)
 
