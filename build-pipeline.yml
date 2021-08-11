@@ -19,5 +19,3 @@ steps:
     repository: $(imageName)
     Dockerfile: batchkit_examples/speech_sdk/Dockerfile
     containerRegistry: $(dockerRegistryServiceConnection)
-    tags: |
-      $(latest)
