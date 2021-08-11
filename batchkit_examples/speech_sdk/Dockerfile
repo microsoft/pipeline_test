@@ -13,4 +13,4 @@ RUN \
  apk add --no-cache curl && \
  apk add --no-cache vim
 
-ENTRYPOINT ["python", "client.py"]
+ENTRYPOINT ["python", "-u", "client.py"]
