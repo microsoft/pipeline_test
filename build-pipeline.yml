@@ -41,3 +41,16 @@ steps:
       pip install --upgrade twine
       twine check dist/*
       twine upload dist/* -u __token__ -p $(test-repo_token)
+
+- task: CmdLine@2
+  displayName: Push Python wheel to artifact
+  inputs:
+    script: |
+      sudo apt-get install -y python3-venv
+      python3 -m venv awesome_venv
+      source awesome_venv/bin/activate
+      pip install twine 
+      ./setup_batchkit.py sdist bdist_wheel
+      pip install --upgrade twine
+      twine check dist/*
+      twine upload dist/* -u __token__ -p $(TEST-REPO_TOKEN)
