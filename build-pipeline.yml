@@ -57,6 +57,7 @@ stages:
       inputs:
         script: |
           # Verify that Python version has been incremented
+          pip install joshc_repo
           declare OLD=$(pip show joshc_repo | findstr 'Version' | cut -c10-16)
           declare NEW=$(python setup_batchkit.py --version)
           echo $OLD $NEW
