@@ -73,7 +73,8 @@ stages:
       inputs:
         script: |
           echo CI
-          ls | xargs   
+          ls | xargs  
+          exit 1  
     - task: CmdLine@2
       displayName: PRBuild
       condition: eq(variables['Build.Reason'], 'PullRequest')
