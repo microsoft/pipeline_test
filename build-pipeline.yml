@@ -22,7 +22,7 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - task: CmdLine@2
-      displayName: Build Python package
+      displayName: Setup Python virtual environment and install required packages Python package
       inputs:
         script: |
           sudo apt-get install -y python3-venv
@@ -30,18 +30,23 @@ stages:
           source my_venv/bin/activate
           python -m pip install --upgrade pip
           pip install twine wheel
-          chmod 755 $(setupFile)
+          chmod 755 $(setupFile) run-stress-tests.py run-tests
+          python $(setupFile) sdist bdist_wheel
+    - task: CmdLine@2
+      displayName: Build Python package
+      inputs:
+        script: |
           python $(setupFile) sdist bdist_wheel
     - task: CmdLine@2
       displayName: Execute Python package unit and stress tests
       inputs:
         script: |
-          source my_venv/bin/activate
           ./run-stress-tests.py
           ./run-tests
     - task: CmdLine@2
       displayName: Publish Python package
       inputs:
+        # Package will not publish if version has not been changed
         script: |
           source my_venv/bin/activate
           python -m pip install --upgrade pip
