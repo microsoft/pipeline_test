@@ -58,14 +58,14 @@ stages:
         script: |
           # Verify that Python version has been incremented
           pip install joshc_repo
-          declare OLD=$(pip show joshc_repo | findstr 'Version' | cut -c10-16)
+          declare OLD=$(pip show joshc_repo | grep Version | cut -c10-16)
           declare NEW=$(python setup_batchkit.py --version)
-          echo $OLD $NEW
-          if [ "$OLD" = "$NEW" ]; then
-              echo "ERROR: Python version must be incremented."
-              exit(1)
+          echo "Current published Python package version: $OLD"
+          echo "Committed Python package version: $NEW"
+          if [ "$OLD" = "$TEST" ]; then
+              echo "ERROR: Increment Python version. Committed Python package has same version number as published package"
+              exit 1
           fi
-
           chmod 755 $(setupFile)
           python $(setupFile) sdist bdist_wheel
     - task: CmdLine@2
