@@ -59,14 +59,26 @@ stages:
           pip install joshc_repo
           declare OLD=$(pip show joshc_repo | grep Version | cut -c10-16)
           declare NEW=$(python setup_batchkit.py --version)
-          echo "Current published Python package version: $OLD"
-          echo "Committed Python package version: $NEW"
+          echo "Latest published Python package version: $OLD"
+          echo "Current Python package version: $NEW"
           if [ "$OLD" = "$NEW" ]; then
               echo "ERROR: Increment Python version. Committed Python package has same version number as published package"
               exit 1
           fi
           chmod 755 $(setupFile)
           python $(setupFile) sdist bdist_wheel
+    - task: CmdLine@2
+      displayName: echo fail
+      condition: failed() # this job will only run if Foo fails
+      inputs:
+        script: |
+          echo 503
+    - task: CmdLine@2
+      displayName: echo success
+      condition: always() # this job will only run if Foo fails
+      inputs:
+        script: |
+          echo 200
     - task: CmdLine@2
       displayName: Execute Python package unit and stress tests
       inputs:
@@ -79,6 +91,7 @@ stages:
       displayName: Publish Python package
       inputs:
         # Package will not publish if version has not been changed
+        # add dependency on build and test steps
         script: |
           source my_venv/bin/activate
           python -m pip install --upgrade pip
@@ -101,3 +114,4 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           latest
+    # add dependency on successful build and test
