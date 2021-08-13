@@ -1,5 +1,17 @@
 trigger:
-- main
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - docs/README.md
+pr:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - docs/README.md
 
 resources:
 - repo: self
@@ -25,24 +37,26 @@ stages:
       displayName: Setup Python virtual environment and install required packages Python package
       inputs:
         script: |
+          sudo apt-get install dos2unix
           sudo apt-get install -y python3-venv
-          python3 -m venv my_venv
+          python -m venv my_venv
           source my_venv/bin/activate
           python -m pip install --upgrade pip
           pip install twine wheel
-          chmod 755 $(setupFile) run-stress-tests.py run-tests
-          python $(setupFile) sdist bdist_wheel
     - task: CmdLine@2
       displayName: Build Python package
       inputs:
         script: |
+          chmod 755 $(setupFile)
           python $(setupFile) sdist bdist_wheel
     - task: CmdLine@2
       displayName: Execute Python package unit and stress tests
       inputs:
         script: |
-          ./run-stress-tests.py
+          chmod 755 run-stress-tests.py run-tests
+          dos2unix run-tests
           ./run-tests
+          python run-stress-tests.py
     - task: CmdLine@2
       displayName: Publish Python package
       inputs:
