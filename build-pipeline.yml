@@ -56,13 +56,12 @@ stages:
       displayName: Build Python package
       inputs:
         script: |
-          # Verify that Python version has been incremented
           pip install joshc_repo
           declare OLD=$(pip show joshc_repo | grep Version | cut -c10-16)
           declare NEW=$(python setup_batchkit.py --version)
           echo "Current published Python package version: $OLD"
           echo "Committed Python package version: $NEW"
-          if [ "$OLD" = "$TEST" ]; then
+          if [ "$OLD" = "$NEW" ]; then
               echo "ERROR: Increment Python version. Committed Python package has same version number as published package"
               exit 1
           fi
