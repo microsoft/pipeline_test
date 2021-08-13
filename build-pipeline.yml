@@ -41,26 +41,26 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: CmdLine@2
-      displayName: Setup Python virtual environment and install required packages Python package
-      inputs:
-        script: |
-          sudo apt-get install dos2unix
-          sudo apt-get install -y python3-venv
-          python -m venv my_venv
-          source my_venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install twine wheel
-    - task: CmdLine@2
-      displayName: Build Python package
-      inputs:
-        script: |
-          pip install joshc_repo
-          declare OLD=$(pip show joshc_repo | grep Version | cut -c10-16)
-          declare NEW=$(python setup_batchkit.py --version)
-          echo "Latest published Python package version: $OLD"
-          echo "Current Python package version: $NEW"
+    # - task: CmdLine@2
+    #   displayName: Setup Python virtual environment and install required packages Python package
+    #   inputs:
+    #     script: |
+    #       sudo apt-get install dos2unix
+    #       sudo apt-get install -y python3-venv
+    #       python -m venv my_venv
+    #       source my_venv/bin/activate
+    #       python -m pip install --upgrade pip
+    #       pip install -r requirements.txt
+    #       pip install twine wheel
+    # - task: CmdLine@2
+    #   displayName: Build Python package
+    #   inputs:
+    #     script: |
+    #       pip install joshc_repo
+    #       declare OLD=$(pip show joshc_repo | grep Version | cut -c10-16)
+    #       declare NEW=$(python setup_batchkit.py --version)
+    #       echo "Latest published Python package version: $OLD"
+    #       echo "Current Python package version: $NEW"
           # if [ "$OLD" = "$NEW" ]; then
           #     echo "ERROR: Increment Python version. Committed Python package has same version number as published package"
           #     exit 1
@@ -73,45 +73,47 @@ stages:
       inputs:
         script: |
           echo CI
+          ls | xargs   
     - task: CmdLine@2
       displayName: PRBuild
       condition: eq(variables['Build.Reason'], 'PullRequest')
       inputs:
         script: |
           echo PR
-    - task: CmdLine@2
-      displayName: Execute Python package unit and stress tests
-      inputs:
-        script: |
-          chmod 755 run-stress-tests.py run-tests
-          dos2unix run-tests
-          ./run-tests
-          python run-stress-tests.py
-    - task: CmdLine@2
-      displayName: Publish Python package
-      inputs:
-        # Package will not publish if version has not been changed
-        # add dependency on build and test steps
-        script: |
-          source my_venv/bin/activate
-          python -m pip install --upgrade pip
-          twine check dist/*
-          # twine upload dist/* -u __token__ -p $(PYPI_API_TOKEN)
-    - task: Docker@2
-      displayName: Build Docker image
-      inputs:
-        command: build
-        repository: $(imageName)
-        Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          latest
-    - task: Docker@2
-      displayName: Push Docker image
-      inputs:
-        command: push
-        repository: $(imageName)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          latest
+          ls | xargs   
+    # - task: CmdLine@2
+    #   displayName: Execute Python package unit and stress tests
+    #   inputs:
+    #     script: |
+    #       chmod 755 run-stress-tests.py run-tests
+    #       dos2unix run-tests
+    #       ./run-tests
+    #       python run-stress-tests.py
+    # - task: CmdLine@2
+    #   displayName: Publish Python package
+    #   inputs:
+    #     # Package will not publish if version has not been changed
+    #     # add dependency on build and test steps
+    #     script: |
+    #       source my_venv/bin/activate
+    #       python -m pip install --upgrade pip
+    #       twine check dist/*
+    #       # twine upload dist/* -u __token__ -p $(PYPI_API_TOKEN)
+    # - task: Docker@2
+    #   displayName: Build Docker image
+    #   inputs:
+    #     command: build
+    #     repository: $(imageName)
+    #     Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
+    #     containerRegistry: $(dockerRegistryServiceConnection)
+    #     tags: |
+    #       latest
+    # - task: Docker@2
+    #   displayName: Push Docker image
+    #   inputs:
+    #     command: push
+    #     repository: $(imageName)
+    #     containerRegistry: $(dockerRegistryServiceConnection)
+    #     tags: |
+    #       latest
     # add dependency on successful build and test
