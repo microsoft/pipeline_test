@@ -56,6 +56,14 @@ stages:
       displayName: Build Python package
       inputs:
         script: |
+          # Verify that Python version has been incremented
+          declare OLD=$(pip show joshc_repo | findstr 'Version' | cut -c10-16)
+          declare NEW=$(python setup_batchkit.py --version)
+          if [ "$OLD" = "$NEW" ]; then
+              echo "ERROR: Python version must be incremented."
+              exit(1)
+          fi
+          
           chmod 755 $(setupFile)
           python $(setupFile) sdist bdist_wheel
     - task: CmdLine@2
