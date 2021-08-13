@@ -5,102 +5,62 @@ resources:
 - repo: self
 
 variables:
-  # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: '5b196e82-84a2-4819-9605-a94dae8a565c'
   containerRegistry: 'joshcacr.azurecr.io'
-
   imageName: 'pipeline_test'
   feedName: 'pipeline_feed_test'
   setupFile: 'setup_batchkit.py'
-  vmImageName: 'ubuntu-20.04' # set to windows-latest or another Windows vmImage for Windows builds
-
-pool:
-  vmImage = $(vmImageName)
+  vmImageName: 'ubuntu-20.04'
 
 stages:
-- stage: Build 
-  displayName: Build Python packages and Docker image
-
-  # jobs run on independent agents
-  jobs:
-  - job: BuildPythonAndDocker
-    displayName: Build Python packages and Docker image
+- stage: BuildTestRelease 
+  displayName: Build, Test, and Release Python packages and Docker image in single stage
+  jobs:   
+  - job: BuildTestRelease
+    displayName: Build, Test, and Release Python packages and Docker image in single job
     pool:
       vmImage: $(vmImageName)
     steps:
-    # - task: TwineAuthenticate@1
-    #   displayName: 'Twine Authenticate'
-    #   inputs:
-    #     artifactFeed: Skyman/$(feedName)
-
     - task: CmdLine@2
-      displayName: BUILD - TEST IF SHARED AGENT
+      displayName: Build Python package
       inputs:
         script: |
-          touch file.txt
-          if test -f "file.txt"; then echo "*****FILE EXISTS IN BUILD*****"; fi
-
-    # - task: CmdLine@2
-    #   displayName: Build Python package
-    #   inputs:
-    #     script: |
-    #       sudo apt-get install -y python3-venv
-    #       python3 -m venv my_venv
-    #       source my_venv/bin/activate
-          # python -m pip install --upgrade pip
-          # pip install twine wheel
-    #       ls | xargs
-    #       chmod 755 $(setupFile)
-    #       python $(setupFile) sdist bdist_wheel
-    #       twine check dist/*
-    #       python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
-    # - task: Docker@2
-    #   displayName: Build and push an image to container registry
-    #   inputs:
-    #     command: buildAndPush
-    #     repository: $(imageName)
-    #     Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
-    #     containerRegistry: $(dockerRegistryServiceConnection)
-    #     tags: |
-    #       latest
-
-- stage: Test 
-  displayName: Test Python packages and Docker image
-  jobs:
-  - job: TestPythonAndDocker
-    displayName: Test Python packages and Docker image
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-
+          sudo apt-get install -y python3-venv
+          python3 -m venv my_venv
+          source my_venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install twine wheel
+          chmod 755 $(setupFile)
+          python $(setupFile) sdist bdist_wheel
     - task: CmdLine@2
-      displayName: TEST - TEST IF SHARED AGENT
+      displayName: Execute Python package unit and stress tests
       inputs:
         script: |
-          if test -f "file.txt"; then echo "*****FILE EXISTS IN TEST*****"; fi
-
-    # - task: CmdLine@2
-    #   displayName: Pull image from container registry and start container 
-    #   inputs:
-    #     script: |
-    #       docker login $(containerRegistry) -u joshcacr -p ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da
-    #       docker pull $(containerRegistry)/$(imageName):latest
-    #       docker run $(containerRegistry)/$(imageName)
-    # - task: PipAuthenticate@0
-    #   displayName: Authenticate with artifact feed
-    #   inputs:
-    #     artifactFeeds: Skyman/$(feedName)
-    # - task: CmdLine@2
-    #   displayName: Consume Python package
-    #   inputs:
-    #     script: |
-    #       sudo apt-get install -y python3-venv
-    #       python3 -m venv my_venv
-    #       source my_venv/bin/activate
-    #       python -m pip install --upgrade pip
-    #       pip install twine wheel keyring artifacts-keyring
-    #       ls | xargs
-    #       pip install --index-url https://pkgs.dev.azure.com/Skyman/_packaging/$(feedName)/pypi/simple/ joshc-repo
-    #       pip install joshc-repo
-
-# - stage: Release
+          source my_venv/bin/activate
+          ./run-stress-tests.py
+          ./run-tests
+    - task: CmdLine@2
+      displayName: Publish Python package
+      inputs:
+        script: |
+          source my_venv/bin/activate
+          python -m pip install --upgrade pip
+          twine check dist/*
+          twine upload dist/* -u __token__ -p $(PYPI_API_TOKEN)
+    - task: Docker@2
+      displayName: Build Docker image
+      inputs:
+        command: build
+        repository: $(imageName)
+        Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          latest
+    - task: Docker@2
+      displayName: Push Docker image
+      inputs:
+        command: push
+        repository: $(imageName)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          latest
