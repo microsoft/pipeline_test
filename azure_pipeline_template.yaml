@@ -1,0 +1,106 @@
+trigger:
+  branches:
+    include:               # only run pipeline when these branches affected
+    - main                 # trigger on commits to main
+  paths:
+    exclude:               # do not run pipeline when changes to these paths are made 
+    - CODE_OF_CONDUCT.md
+pr:
+  branches:
+    include:
+    - main                 # trigger on commits to pull request
+
+resources:
+- repo: self
+
+variables:
+  dockerRegistryServiceConnection: '5b196e82-84a2-4819-9605-a94dae8a565c'
+  containerRegistry: 'joshcacr.azurecr.io'
+  containerRegistryUser: 'joshcacr'
+  containerRegistryPass: 'ynWDQaKb0a1jNAWSaMvY/bRm91oHx2da'
+  imageName: 'pipeline_test'
+  feedName: 'pipeline_feed_test'
+  setupFile: 'setup_batchkit.py'
+  vmImageName: 'ubuntu-20.04' # set to windows-latest or another Windows vmImage for Windows builds
+
+stages:
+- stage: StageName     # there may be 1+
+  displayName: Stage description
+  jobs:                # jobs run on independent agents
+  - job: JobName       # there may be 1+
+    displayName: Job description
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+
+    # Build and push an image to container registry
+    - task: Docker@2   # there may be 1+
+      inputs:
+        command: buildAndPush
+        repository: $(imageName)
+        Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          latest
+
+    # Pull an image from a container registry
+    - task: CmdLine@2
+      displayName: Pull image from container registry and start container 
+      inputs:
+        script: |
+          docker login $(containerRegistry) -u $(containerRegistryUser) -p $(containerRegistryPass)
+          docker pull $(containerRegistry)/$(imageName):latest
+          docker run $(containerRegistry)/$(imageName)
+
+    # Command line tasks for executing shell script
+    - task: CmdLine@2
+      displayName: Test if file exists in agent. Useful if checking that files are shared between tasks
+      inputs:
+        script: |
+          touch file.txt
+          ls | xargs        
+          if test -f "file.txt"; then echo "*****FILE EXISTS IN BUILD*****"; fi
+
+    # Twine authentication for authenticating agent to publish Python packages to Azure Artifact Feed 
+    - task: TwineAuthenticate@1
+      inputs:
+        artifactFeed: Skyman/$(feedName)
+
+    # Build Python package and publish it to artifact feed and PyPi
+    - task: CmdLine@2
+      inputs:
+        script: |
+          sudo apt-get install -y python3-venv
+          python3 -m venv my_venv
+          source my_venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install twine wheel
+          chmod 755 $(setupFile)
+          python $(setupFile) sdist bdist_wheel
+          twine check dist/*
+          python -m twine upload -r $(feedName) --config-file $(PYPIRC_PATH) dist/*
+          twine upload dist/* -u __token__ -p $(API_TOKEN)
+
+    # Configures pip.config file to allow pip install to pull Python packages from Azure Artifiact Feed
+    - task: PipAuthenticate@0
+      displayName: Authenticate with artifact feed
+      inputs:
+        artifactFeeds: Skyman/$(feedName)
+
+    # Consume Python package from both PyPi simple index and artifact feed (NEED TO FIGURE OUT HOW TO ISOLATE TO ONLY PULL FROM ARTIFACT FEED)
+    - task: CmdLine@2
+      displayName: Consume Python package
+      inputs:
+        script: |
+          sudo apt-get install -y python3-venv
+          python3 -m venv my_venv
+          source my_venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install joshc-repo
+
+    # DotNet tasks for executing DotNet commands
+    - task: DotNetCoreCLI@2
+      displayName: dotnet build the common library
+      inputs:
+        command: 'build'
+        projects: 'common'
