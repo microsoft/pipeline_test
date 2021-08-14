@@ -1,14 +1,17 @@
+# trigger on commits and PR merges to main
 trigger:
   branches:
     include:               # only run pipeline when these branches affected
-    - main                 # trigger on commits to main
+    - main                 
   paths:
     exclude:               # do not run pipeline when changes to these paths are made 
     - CODE_OF_CONDUCT.md
+
+# trigger on commits to pull request
 pr:
   branches:
     include:
-    - main                 # trigger on commits to pull request
+    - main                 
 
 resources:
 - repo: self
@@ -26,7 +29,7 @@ variables:
 stages:
 - stage: StageName     # there may be 1+
   displayName: Stage description
-  jobs:                # jobs run on independent agents
+  jobs:                # jobs run on independent agents. Therefore, resources are NOT shared between jobs or stages
   - job: JobName       # there may be 1+
     displayName: Job description
     pool:
@@ -66,15 +69,23 @@ stages:
       inputs:
         artifactFeed: Skyman/$(feedName)
 
+    # Setup Python environment
+    - task: CmdLine@2
+      displayName: Setup Python virtual environment and install required packages Python package
+      inputs:
+        script: |
+          sudo apt-get install dos2unix
+          sudo apt-get install -y python3-venv
+          python -m venv my_venv
+          source my_venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install twine wheel
+
     # Build Python package and publish it to artifact feed and PyPi
     - task: CmdLine@2
       inputs:
         script: |
-          sudo apt-get install -y python3-venv
-          python3 -m venv my_venv
-          source my_venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install twine wheel
           chmod 755 $(setupFile)
           python $(setupFile) sdist bdist_wheel
           twine check dist/*

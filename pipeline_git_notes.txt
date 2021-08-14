@@ -1,0 +1,21 @@
+# Git and pipeline interaction
+
+## Triggering Pipeline Runs
+Branch created
+Commit to branch 
+Draft pull request created 
+Pipeline triggered by 'pr'
+Draft pull request closed and reopened with no changes
+Pipeline triggered by 'pr'
+New commit to branch in draft pull request 
+Pipeline triggered by 'pr'
+New commit to branch in pull request after marked ready for review 
+Pipeline triggered by 'pr'
+Branch merged to main
+Pipeline triggered by 'main'
+Commit directly to main 
+Pipeline triggered by 'main'
+
+## Checking Pipeline Run Results in Git
+If pipeline triggered by 'pr' fails, this is reflected in Git on 'Pull requests' tab and on specific pull request page 
+If pipeline triggered by 'main' fails, this is reflected in Git on 'Code' tab when viewing commit history
