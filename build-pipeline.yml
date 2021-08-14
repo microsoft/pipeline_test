@@ -82,7 +82,6 @@ stages:
         script: |
           echo PR
           ls | xargs  
-          exit 1 
     # - task: CmdLine@2
     #   displayName: Execute Python package unit and stress tests
     #   inputs:
