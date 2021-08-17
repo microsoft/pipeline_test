@@ -93,6 +93,7 @@ stages:
       inputs:
         script: |
           pushd ci
+          chmod 755 speech_batch_kit_sanity_test
           dos2unix speech_batch_kit_sanity_test
           ./speech_batch_kit_sanity_test
           popd
