@@ -7,7 +7,7 @@ ls -a
 
 # declare variables
 imageName="pipeline_test"
-imageName="mcr.microsoft.com/azure-cognitive-services/speechservices/speech-to-text"
+# imageName="mcr.microsoft.com/azure-cognitive-services/speechservices/speech-to-text"
 stt_on_prem_1="stt-onprem-1"
 stt_on_prem_2="stt-onprem-2"
 docker_port_1="5000"
