@@ -42,17 +42,17 @@ stages:
     steps:
 
 # BUILD AND TEST PIPELINE TASKS
-    # - task: CmdLine@2
-    #   displayName: Setup Python virtual environment and install required packages Python package
-    #   inputs:
-    #     script: |
-    #       sudo apt-get install dos2unix
-    #       sudo apt-get install -y python3-venv
-    #       python -m venv my_venv
-    #       source my_venv/bin/activate
-    #       python -m pip install --upgrade pip
-    #       pip install -r requirements.txt
-    #       pip install twine wheel
+    - task: CmdLine@2
+      displayName: Setup Python virtual environment and install required packages Python package
+      inputs:
+        script: |
+          sudo apt-get install dos2unix
+          sudo apt-get install -y python3-venv
+          python -m venv my_venv
+          source my_venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install twine wheel
     # - task: CmdLine@2
     #   displayName: Build Python package
     #   inputs:
@@ -92,8 +92,10 @@ stages:
       displayName: Execute Speech Batch Kit sanity test
       inputs:
         script: |
+          pushd ci
           dos2unix speech_batch_kit_sanity_test
           ./speech_batch_kit_sanity_test
+          popd
 
 
 # RELEASE PIPELINE TASKS
