@@ -3,6 +3,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+ls -a
+
 # declare variables
 imageName="pipeline_test"
 stt_on_prem_1="stt-onprem-1"
@@ -42,7 +44,7 @@ while [[ $finished != 1 ]]; do
 done
 
 # update config.yaml with speech container IP addresses 
-echo 528491 | sudo rm config.yaml
+sudo rm config.yaml
 echo "MyContainer1:
   concurrency: 2
   host: $ip1
@@ -53,10 +55,10 @@ MyContainer2:
   port: $container_port" >> config.yaml
 
 # create bind mount directory and audio_files subdirectory in /mnt WSL2 directory then copy over config.yaml and audio files 
-echo 528491 | sudo -S mkdir /mnt/$temp_vol
+sudo mkdir /mnt/$temp_vol
 echo "INFO: Created bind mount directory"
-echo 528491 | sudo -S cp config.yaml /mnt/$temp_vol/config.yaml
-echo 528491 | sudo -S cp -R audio_files /mnt/$temp_vol/audio_files
+sudo cp config.yaml /mnt/$temp_vol/config.yaml
+sudo cp -R audio_files /mnt/$temp_vol/audio_files
 echo "INFO: Copied configuration and audio files to bind mount directory"
 
 # run batch processing container. container deleted after running
@@ -67,9 +69,9 @@ docker run -t -i --rm --name batch_processing --volume /mnt/$temp_vol:/my_nfs ba
 # use run_summary.json output log file to verify that number of endpoints equals input value and that all audio files successfully processed
 pushd /mnt/$temp_vol/transcriptions
 
-num_endpoints=$(echo 528491 | sudo -S jq .overall_summary.audio_stats.num_endpoints run_summary.json)
-audio_files_passed=$(echo 528491 | sudo -S jq .overall_summary.file_stats.passed run_summary.json)
-audio_files_total=$(echo 528491 | sudo -S jq .overall_summary.file_stats.total run_summary.json)
+num_endpoints=$(sudo jq .overall_summary.audio_stats.num_endpoints run_summary.json)
+audio_files_passed=$(sudo jq .overall_summary.file_stats.passed run_summary.json)
+audio_files_total=$(sudo jq .overall_summary.file_stats.total run_summary.json)
 
 if [ $num_endpoints = "2" ] && [ $audio_files_passed = $audio_files_total ]
 then 
@@ -84,7 +86,7 @@ fi
 popd
 
 # remove bind mount directory and stop on-premise speech-to-text Docker containers 
-echo 528491 | sudo -S rm -rf /mnt/$temp_vol
+sudo rm -rf /mnt/$temp_vol
 docker stop $stt_on_prem_1
 docker stop $stt_on_prem_2
 echo "INFO: Deleted bind mount directory and stopped on-premise speech-to-text Docker containers"
