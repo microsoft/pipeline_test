@@ -27,7 +27,6 @@ resources:
 variables:
   dockerRegistryServiceConnection: '5b196e82-84a2-4819-9605-a94dae8a565c'
   containerRegistry: 'joshcacr.azurecr.io'
-  imageName: 'pipeline_test'
   feedName: 'pipeline_feed_test'
   setupFile: 'setup_batchkit.py'
   vmImageName: 'ubuntu-20.04'
@@ -54,39 +53,51 @@ stages:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install twine wheel
+    # - task: CmdLine@2
+    #   displayName: Build Python package
+    #   inputs:
+    #     script: |
+    #       pip install joshc_repo
+    #       declare OLD=$(pip show joshc_repo | grep Version | cut -c10-16)
+    #       declare NEW=$(python setup_batchkit.py --version)
+    #       echo "Latest published Python package version: $OLD"
+    #       echo "Current Python package version: $NEW"
+    #       if [ "$OLD" = "$NEW" ]; then
+    #           echo "ERROR: Increment Python version. New Python package has same version number as published package"
+    #           exit 1
+    #       fi
+    #       echo "INFO: Published Python package is version $OLD. New Python package is version $NEW"
+    #       chmod 755 $(setupFile)
+    #       python $(setupFile) sdist bdist_wheel
+    # - task: CmdLine@2
+    #   displayName: Execute Python package unit and stress tests
+    #   condition: always()
+    #   inputs:
+    #     script: |
+    #       chmod 755 run-stress-tests.py run-tests
+    #       dos2unix run-tests
+    #       ./run-tests
+    #       python run-stress-tests.py
+    # - task: Docker@2
+    #   displayName: Build Docker image
+    #   condition: always()
+    #   inputs:
+    #     command: build
+    #     repository: $(imageName)
+    #     Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
+    #     containerRegistry: $(dockerRegistryServiceConnection)
+    #     tags: |
+    #       latest
     - task: CmdLine@2
-      displayName: Build Python package
+      displayName: Execute Speech Batch Kit sanity test
       inputs:
         script: |
-          pip install joshc_repo
-          declare OLD=$(pip show joshc_repo | grep Version | cut -c10-16)
-          declare NEW=$(python setup_batchkit.py --version)
-          echo "Latest published Python package version: $OLD"
-          echo "Current Python package version: $NEW"
-          if [ "$OLD" = "$NEW" ]; then
-              echo "ERROR: Increment Python version. Committed Python package has same version number as published package"
-              exit 1
-          fi
-          chmod 755 $(setupFile)
-          python $(setupFile) sdist bdist_wheel
-    - task: CmdLine@2
-      displayName: Execute Python package unit and stress tests
-      # condition: in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
-      inputs:
-        script: |
-          chmod 755 run-stress-tests.py run-tests
-          dos2unix run-tests
-          ./run-tests
-          python run-stress-tests.py
-    - task: Docker@2
-      displayName: Build Docker image
-      inputs:
-        command: build
-        repository: $(imageName)
-        Dockerfile: joshc_repo_examples/speech_sdk/Dockerfile
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          latest
+          pushd ci
+          chmod 755 speech_batch_kit_sanity_test
+          dos2unix speech_batch_kit_sanity_test
+          ./speech_batch_kit_sanity_test
+          popd
+
 
 # RELEASE PIPELINE TASKS
     - task: CmdLine@2
